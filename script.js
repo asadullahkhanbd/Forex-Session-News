@@ -26,13 +26,25 @@ function getCurrentSession() {
   return null;
 }
 
+function formatTimeInLocal(hourUTC) {
+  const now = new Date();
+  now.setUTCHours(hourUTC, 0, 0, 0);
+  return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 function displaySession() {
   const sessionInfo = document.getElementById("session-info");
+  const sessionTime = document.getElementById("session-time");
   const pairsList = document.getElementById("pairs-list");
   const session = getCurrentSession();
 
   if (session) {
     sessionInfo.textContent = `${session.name} session is currently OPEN.`;
+
+    const startLocal = formatTimeInLocal(session.start);
+    const endLocal = formatTimeInLocal(session.end);
+    sessionTime.textContent = `Open Time: ${startLocal} — Close Time: ${endLocal}`;
+
     pairsList.innerHTML = "";
     session.pairs.forEach(pair => {
       const li = document.createElement("li");
@@ -41,6 +53,7 @@ function displaySession() {
     });
   } else {
     sessionInfo.textContent = "No active session right now.";
+    sessionTime.textContent = "";
     pairsList.innerHTML = "";
   }
 }
