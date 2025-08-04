@@ -1,46 +1,26 @@
-
-// Timezone conversion & session info logic
 const sessions = [
-  {
-    name: "London",
-    start: 8,
-    end: 17,
-    pairs: ["EUR/USD", "GBP/USD", "EUR/GBP", "USD/CHF"]
-  },
-  {
-    name: "New York",
-    start: 13,
-    end: 22,
-    pairs: ["USD/CAD", "USD/JPY", "EUR/USD", "GBP/USD"]
-  },
-  {
-    name: "Tokyo",
-    start: 0,
-    end: 9,
-    pairs: ["USD/JPY", "EUR/JPY", "GBP/JPY"]
-  },
-  {
-    name: "Sydney",
-    start: 22,
-    end: 7,
-    pairs: ["AUD/USD", "AUD/JPY", "NZD/USD"]
-  }
+  { name: "London", start: 8, end: 17, pairs: ["EUR/USD", "GBP/USD", "EUR/GBP", "USD/CHF"] },
+  { name: "New York", start: 13, end: 22, pairs: ["USD/CAD", "USD/JPY", "EUR/USD", "GBP/USD"] },
+  { name: "Tokyo", start: 0, end: 9, pairs: ["USD/JPY", "EUR/JPY", "GBP/JPY"] },
+  { name: "Sydney", start: 22, end: 7, pairs: ["AUD/USD", "AUD/JPY", "NZD/USD"] }
 ];
+
+function updateLocalTime() {
+  const localTimeSpan = document.getElementById("local-time");
+  setInterval(() => {
+    const now = new Date();
+    localTimeSpan.textContent = now.toLocaleString();
+  }, 1000);
+}
 
 function getCurrentSession() {
   const now = new Date();
   const utcHour = now.getUTCHours();
-  // Check each session if current UTC hour is within start-end
   for (const session of sessions) {
     if (session.start < session.end) {
-      if (utcHour >= session.start && utcHour < session.end) {
-        return session;
-      }
+      if (utcHour >= session.start && utcHour < session.end) return session;
     } else {
-      // Overnight session (e.g., Sydney)
-      if (utcHour >= session.start || utcHour < session.end) {
-        return session;
-      }
+      if (utcHour >= session.start || utcHour < session.end) return session;
     }
   }
   return null;
@@ -65,7 +45,6 @@ function displaySession() {
   }
 }
 
-// Dummy news data with high impact marking
 const newsData = [
   { time: "14:30", currency: "USD", event: "Non-Farm Payroll", impact: "high" },
   { time: "16:00", currency: "EUR", event: "ECB Interest Rate Decision", impact: "high" },
@@ -75,20 +54,17 @@ const newsData = [
 function displayNews() {
   const newsList = document.getElementById("news-list");
   newsList.innerHTML = "";
-
   newsData.forEach(news => {
     const div = document.createElement("div");
     div.textContent = `${news.time} ${news.currency} - ${news.event}`;
-    if (news.impact === "high") {
-      div.classList.add("high-impact");
-    }
+    if (news.impact === "high") div.classList.add("high-impact");
     newsList.appendChild(div);
   });
 }
 
-window.onload = function() {
+window.onload = function () {
+  updateLocalTime();
   displaySession();
   displayNews();
-  // Refresh session info every minute
-  setInterval(displaySession, 60000);
+  setInterval(displaySession, 60000); // check session every minute
 };
