@@ -5,6 +5,7 @@ const sessions = [
   { name: "Sydney", start: 22, end: 7, pairs: ["AUD/USD", "AUD/JPY", "NZD/USD"] }
 ];
 
+// 🕒 Show Local Time
 function updateLocalTime() {
   const localTimeSpan = document.getElementById("local-time");
   setInterval(() => {
@@ -13,6 +14,7 @@ function updateLocalTime() {
   }, 1000);
 }
 
+// 🔍 Find Current Session
 function getCurrentSession() {
   const now = new Date();
   const utcHour = now.getUTCHours();
@@ -26,12 +28,14 @@ function getCurrentSession() {
   return null;
 }
 
+// 🕘 Format Session Time in Local Time
 function formatTimeInLocal(hourUTC) {
   const now = new Date();
   now.setUTCHours(hourUTC, 0, 0, 0);
   return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+// ✅ Show Current Session Info
 function displaySession() {
   const sessionInfo = document.getElementById("session-info");
   const sessionTime = document.getElementById("session-time");
@@ -58,26 +62,60 @@ function displaySession() {
   }
 }
 
-const newsData = [
-  { time: "14:30", currency: "USD", event: "Non-Farm Payroll", impact: "high" },
-  { time: "16:00", currency: "EUR", event: "ECB Interest Rate Decision", impact: "high" },
-  { time: "18:00", currency: "GBP", event: "BOE Inflation Report", impact: "medium" }
-];
+// ⏭️ Get Next Session & Countdown
+function getNextSession() {
+  const nowUTC = new Date();
+  const utcHour = nowUTC.getUTCHours();
+  const utcMinute = nowUTC.getUTCMinutes();
+  const totalMinutesNow = utcHour * 60 + utcMinute;
 
-function displayNews() {
-  const newsList = document.getElementById("news-list");
-  newsList.innerHTML = "";
-  newsData.forEach(news => {
-    const div = document.createElement("div");
-    div.textContent = `${news.time} ${news.currency} - ${news.event}`;
-    if (news.impact === "high") div.classList.add("high-impact");
-    newsList.appendChild(div);
+  let nextSession = null;
+  let minDiff = Infinity;
+
+  sessions.forEach(session => {
+    const sessionStart = session.start * 60;
+    let diff;
+
+    if (sessionStart > totalMinutesNow) {
+      diff = sessionStart - totalMinutesNow;
+    } else {
+      diff = (24 * 60 - totalMinutesNow) + sessionStart;
+    }
+
+    if (diff < minDiff) {
+      minDiff = diff;
+      nextSession = session;
+    }
   });
+
+  return { session: nextSession, minutesToStart: minDiff };
 }
 
+function formatCountdown(minutesLeft) {
+  const hours = Math.floor(minutesLeft / 60);
+  const minutes = Math.floor(minutesLeft % 60);
+  const seconds = 60 - new Date().getUTCSeconds();
+  return `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+}
+
+function displayNextSession() {
+  const nextInfo = document.getElementById("next-session-info");
+  const nextTimer = document.getElementById("next-session-timer");
+
+  const updateTimer = () => {
+    const { session, minutesToStart } = getNextSession();
+    nextInfo.textContent = `Next session: ${session.name}`;
+    nextTimer.textContent = `Starts in: ${formatCountdown(minutesToStart)}`;
+  };
+
+  updateTimer();
+  setInterval(updateTimer, 1000); // countdown update
+}
+
+// 🚀 On Page Load
 window.onload = function () {
   updateLocalTime();
   displaySession();
-  displayNews();
-  setInterval(displaySession, 60000); // check session every minute
+  displayNextSession();
+  setInterval(displaySession, 60000); // recheck current session every minute
 };
